@@ -50,6 +50,12 @@
 -f, --ffmpeg <FFMPEG_FILTER_ARGS>
 		FFmpeg filter options
 
+	--start-frame <SKIP_FRAMES>
+		Specify the frame at which to start encoding
+
+	--end-frame <LIMIT_FRAMES>
+		Specify the frame at which to stop encoding
+
 -m, --chunk-method <CHUNK_METHOD>
 		Method used for piping exact ranges of frames to the encoder
 

@@ -65,6 +65,8 @@ pub struct EncodeArgs {
 
   // FFmpeg params
   pub ffmpeg_filter_args: Vec<String>,
+  pub start_frame: Option<usize>,
+  pub end_frame: Option<usize>,
   pub audio_params: Vec<String>,
   pub input_pix_format: InputPixelFormat,
   pub output_pix_format: PixelFormat,
@@ -205,6 +207,12 @@ properly into a mkv file. Specify mkvmerge as the concatenation method by settin
     {
       // --rt must be used with 1-pass mode
       self.passes = 1;
+    }
+
+    if let (Some(start_frame), Some(end_frame)) = (self.start_frame, self.end_frame) {
+      if start_frame > end_frame {
+        bail!("--start-frame cannot be greater than --end-frame");
+      }
     }
 
     if !self.force {

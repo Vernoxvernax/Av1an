@@ -257,6 +257,8 @@ fn get_test_args() -> Av1anContext {
   let args = EncodeArgs {
     log_file: PathBuf::new(),
     ffmpeg_filter_args: Vec::new(),
+    start_frame: None,
+    end_frame: None,
     temp: String::new(),
     force: false,
     passes: 2,

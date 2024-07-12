@@ -198,8 +198,7 @@ impl Av1anContext {
       }
     );
 
-    let splits = self.split_routine()?;
-
+    let mut splits = self.split_routine()?;
     if self.args.sc_only {
       debug!("scene detection only");
 
@@ -208,6 +207,15 @@ impl Av1anContext {
       }
 
       exit(0);
+    }
+
+    if self.args.start_frame.is_some() || self.args.end_frame.is_some() {
+      splits = self.skip_limit_frames(splits);
+
+      if splits.is_empty() {
+        warn!("No frames to encode for the given frame range.");
+        exit(0);
+      }
     }
 
     let (chunk_queue, total_chunks) = self.load_or_gen_chunk_queue(&splits)?;
@@ -1188,5 +1196,46 @@ impl Av1anContext {
       save_chunk_queue(&self.args.temp, &chunks)?;
       Ok((chunks, num_chunks))
     }
+  }
+
+  /// Filters all scenes based on the `--start-frame` and `--end-frame` arguments
+  /// This is intentionally not written to the scenes.json file
+  fn skip_limit_frames(&mut self, scenes: Vec<Scene>) -> Vec<Scene> {
+    let start_frame = self.args.start_frame.unwrap_or(0);
+    let end_frame = self.args.end_frame;
+    let mut new_scenes: Vec<Scene> = vec![];
+
+    for mut scene in scenes {
+      let mut start_intersecting = false;
+      let mut end_intersecting = false;
+      let mut intersecting = false;
+
+      if scene.start_frame >= start_frame {
+        intersecting = true;
+      } else if scene.end_frame >= start_frame {
+        intersecting = true;
+        start_intersecting = true;
+      }
+
+      if let Some(limit_) = end_frame {
+        if scene.start_frame > limit_ {
+          continue;
+        } else if scene.end_frame > limit_ {
+          end_intersecting = true;
+        }
+      }
+
+      if intersecting {
+        if start_intersecting {
+          scene.start_frame = start_frame;
+        }
+        if end_intersecting {
+          scene.end_frame = end_frame.unwrap();
+        }
+        new_scenes.push(scene.clone());
+      }
+    }
+
+    new_scenes
   }
 }

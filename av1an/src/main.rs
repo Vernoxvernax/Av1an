@@ -328,6 +328,14 @@ pub struct CliOpts {
   )]
   pub ffmpeg_filter_args: Option<String>,
 
+  /// Specify the frame at which to start encoding
+  #[clap(long, help_heading = "Encoding")]
+  pub start_frame: Option<usize>,
+
+  /// Specify the frame at which to stop encoding
+  #[clap(long, help_heading = "Encoding")]
+  pub end_frame: Option<usize>,
+
   /// Method used for piping exact ranges of frames to the encoder
   ///
   /// Methods that require an external vapoursynth plugin:
@@ -663,6 +671,8 @@ pub fn parse_cli(args: CliOpts) -> anyhow::Result<Vec<EncodeArgs>> {
       } else {
         Vec::new()
       },
+      start_frame: args.start_frame,
+      end_frame: args.end_frame,
       temp: temp.clone(),
       force: args.force,
       passes: if let Some(passes) = args.passes {
